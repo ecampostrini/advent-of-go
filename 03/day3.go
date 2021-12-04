@@ -90,7 +90,10 @@ func main() {
     }
   }
 
-  oxigenGeneratorRatingDec, co2ScrubberRatingDec := binary2Int(oxigenGeneratorRating[0]), binary2Int(co2ScrubberRating[0])
-  fmt.Println(oxigenGeneratorRatingDec, co2ScrubberRatingDec, oxigenGeneratorRatingDec * co2ScrubberRatingDec)
+  oxigenGeneratorRatingDec := binary2Int(oxigenGeneratorRating[0])
+  co2ScrubberRatingDec :=  binary2Int(co2ScrubberRating[0])
+  fmt.Println(oxigenGeneratorRatingDec, 
+    co2ScrubberRatingDec, 
+    oxigenGeneratorRatingDec * co2ScrubberRatingDec)
 
 }
