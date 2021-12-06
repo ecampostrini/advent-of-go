@@ -75,41 +75,27 @@ func readSegments(scanner *bufio.Scanner) ([]Segment, int, int) {
 }
 
 func getDirectionAndLength(segment *Segment) (Direction, int) {
-  var difference int
-  var direction Direction
-
-  if segment.a.X - segment.b.X == segment.a.Y - segment.b.Y {
-    difference = segment.a.X - segment.b.X
-    if segment.a.X < segment.b.X {
-      direction = Direction{1, 1}
-    } else {
-      direction = Direction{-1, -1}
-    }
-  } else if segment.a.X - segment.b.X == segment.b.Y - segment.a.Y {
-    difference = segment.a.X - segment.b.X
-    direction = Direction{-1, 1}
-    if segment.a.X < segment.b.X {
-      direction = Direction{1, -1}
-    } else {
-      direction = Direction{-1, 1}
-    }
-  } else if segment.a.X == segment.b.X {
-    difference = segment.a.Y - segment.b.Y
-    if difference >= 0 {
-      direction = Direction{0, -1}
-    } else {
-      direction = Direction{0, 1}
-    }
-  } else if segment.a.Y == segment.b.Y {
-    difference = segment.a.X - segment.b.X
-    if difference >= 0 {
-      direction = Direction{-1, 0}
-    } else {
-      direction = Direction{1, 0}
-    }
+  var xDirection, yDirection, xDiff, yDiff int
+  
+  xDiff = segment.a.X - segment.b.X
+  if xDiff > 0 {
+    xDirection = -1
+  } else if xDiff < 0 {
+    xDirection = 1
+  } else {
+    xDirection = 0
   }
 
-  return direction, Abs(difference)
+  yDiff = segment.a.Y - segment.b.Y
+  if yDiff > 0 {
+    yDirection = -1
+  } else if yDiff < 0 {
+    yDirection = 1
+  } else {
+    yDirection = 0
+  }
+
+  return Direction{xDirection, yDirection}, max(Abs(xDiff), Abs(yDiff))
 }
 
 func printGrid(g *[][]int) {
@@ -131,10 +117,6 @@ func countOverlaps(grid *[][]int) int {
 }
 
 func markSegmentOnGrid(grid *[][]int, start Point, direction Direction, length int) {
-  if direction.X == 0 && direction.Y == 0 {
-    return
-  }
-
   for i := 0; i <= length; i++ {
     (*grid)[start.Y + (direction.Y * i)][start.X + (direction.X * i)]++
   }
