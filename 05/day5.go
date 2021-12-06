@@ -20,15 +20,14 @@ type Segment struct {
   b Point
 }
 
-// Abs returns the absolute value of x.
 func Abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
+  if x < 0 {
+    return -x
+  }
+  return x
 }
 
-func max(x, y int) int {
+func Max(x, y int) int {
   if x > y {
     return x
   }
@@ -67,8 +66,8 @@ func readSegments(scanner *bufio.Scanner) ([]Segment, int, int) {
   for scanner.Scan() {
     rawPoints := strings.Split(scanner.Text(), "->") 
     newSegment := Segment{parsePoint(rawPoints[0]), parsePoint(rawPoints[1])}
-    maxX = max(max(newSegment.a.X, newSegment.b.X), maxX)
-    maxY = max(max(newSegment.a.Y, newSegment.b.Y), maxY)
+    maxX = Max(Max(newSegment.a.X, newSegment.b.X), maxX)
+    maxY = Max(Max(newSegment.a.Y, newSegment.b.Y), maxY)
     segments = append(segments, newSegment)
   }
   return segments, maxX + 1, maxY + 1
@@ -95,7 +94,7 @@ func getDirectionAndLength(segment *Segment) (Direction, int) {
     yDirection = 0
   }
 
-  return Direction{xDirection, yDirection}, max(Abs(xDiff), Abs(yDiff))
+  return Direction{xDirection, yDirection}, Max(Abs(xDiff), Abs(yDiff))
 }
 
 func printGrid(g *[][]int) {
@@ -133,7 +132,7 @@ func main() {
   scanner := bufio.NewScanner(file)
   segments, maxX, maxY := readSegments(scanner)
 
-  grid := makeGrid(max(maxX, maxY))
+  grid := makeGrid(Max(maxX, maxY))
   for i := 0; i < len(segments); i++ {
     direction, segmentLength := getDirectionAndLength(&segments[i])
     markSegmentOnGrid(&grid, segments[i].a, direction, segmentLength)
