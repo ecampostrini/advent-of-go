@@ -1,39 +1,56 @@
 package main
 
 import (
-  "bufio"
-  "fmt"
-  "os"
-  "strings"
-  "strconv"
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
-func initLanternFish(s *bufio.Scanner) map[int]int {
-  ret := make(map[int]int)
+func initLanternFish(s *bufio.Scanner, cycleLength int) map[int]int {
+	ret := make(map[int]int)
+	for i := 0; i < cycleLength+1; i++ {
+		ret[i] = 0
+	}
 
-  s.Scan()
-  for _, c := range strings.Split(s.Text(), ",") {
-    fmt.Println(c) 
-    n, err := strconv.Atoi(c)
-    if err != nil {
-      fmt.Println("Failed to parse number from input", err)
-      os.Exit(1)
-    }
-    ret[n]++
-  }
-  return ret
+	s.Scan()
+	for _, c := range strings.Split(s.Text(), ",") {
+		n, err := strconv.Atoi(c)
+		if err != nil {
+			fmt.Println("Failed to parse number from input", err)
+			os.Exit(1)
+		}
+		ret[n]++
+	}
+	return ret
 }
 
 func main() {
-  file, err := os.Open("./input.test.txt")
-  if err != nil {
-    fmt.Println("Error opening input file", err)
-    os.Exit(1)
-  }
-  defer file.Close()
+	file, err := os.Open("./input.txt")
+	if err != nil {
+		fmt.Println("Error opening input file", err)
+		os.Exit(1)
+	}
+	defer file.Close()
 
-  scanner := bufio.NewScanner(file)
-  lanternfish := initLanternFish(scanner)
+	scanner := bufio.NewScanner(file)
 
-  fmt.Println(lanternfish)
+	const days = 256
+	lanternfish := initLanternFish(scanner, 8)
+	for dayNum := 0; dayNum < days; dayNum++ {
+		timeouts := lanternfish[0]
+		for j := 0; j < len(lanternfish)-1; j++ {
+			lanternfish[j] = lanternfish[j+1]
+		}
+		lanternfish[len(lanternfish)-1] = timeouts
+		lanternfish[6] += timeouts
+	}
+
+	count := 0
+	for _, v := range lanternfish {
+		count += v
+	}
+
+	fmt.Println(count)
 }
