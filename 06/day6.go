@@ -34,10 +34,8 @@ func main() {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-
 	const days = 256
-	lanternfish := initLanternFish(scanner, 8)
+	lanternfish := initLanternFish(bufio.NewScanner(file), 8)
 	for dayNum := 0; dayNum < days; dayNum++ {
 		timeouts := lanternfish[0]
 		for j := 0; j < len(lanternfish)-1; j++ {
