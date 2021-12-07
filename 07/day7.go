@@ -25,6 +25,10 @@ func Max(s []int) int {
 	return max
 }
 
+func sumFirstN(n uint) uint {
+	return n * (n + 1) / 2
+}
+
 func readPositions(scanner *bufio.Scanner) []int {
 	var ret []int
 	scanner.Scan()
@@ -53,7 +57,7 @@ func main() {
 	for i := 0; i <= max; i++ {
 		currentFuel := uint(0)
 		for _, pos := range positions {
-			currentFuel += Abs(i - pos)
+			currentFuel += sumFirstN(Abs(i - pos))
 		}
 		if currentFuel < minFuel {
 			minFuel = currentFuel
