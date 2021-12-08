@@ -105,9 +105,8 @@ func main() {
 	fmt.Println(easyDigitsCount)
 
 	configurations := permutations("abcdefg")
-	fmt.Println(len(configurations))
 	var total int
-	for idx, entry := range entries {
+	for _, entry := range entries {
 		patterns := entry.SignalPatterns
 		var targetConfig string
 		for _, configuration := range configurations {
@@ -124,13 +123,10 @@ func main() {
 				continue
 			}
 
-			//fmt.Println("Configuration ", configuration)
-			//fmt.Println("Patterns ", patterns)
 			zero, six, nine := getConfigForDigit(0, configuration), getConfigForDigit(6, configuration), getConfigForDigit(9, configuration)
 			hasMismatch := false
 			for i := 0; !hasMismatch && i < len(patterns[6]); i++ {
 				p := patterns[6][i]
-				//fmt.Println(p, zero, six, nine)
 				if p != zero && p != six && p != nine {
 					hasMismatch = true
 				}
@@ -139,7 +135,6 @@ func main() {
 				continue
 			}
 
-			//fmt.Println("And Here!")
 			two, three, five := getConfigForDigit(2, configuration), getConfigForDigit(3, configuration), getConfigForDigit(5, configuration)
 			hasMismatch = false
 			for i := 0; !hasMismatch && i < len(patterns[5]); i++ {
@@ -155,8 +150,6 @@ func main() {
 			targetConfig = configuration
 			break
 		}
-		fmt.Println(idx, "- ", entry)
-		fmt.Println("Found the config: ", targetConfig)
 		var outputValue int
 		for _, outVal := range entry.OutputValues {
 			for i := 0; i < 10; i++ {
@@ -166,7 +159,6 @@ func main() {
 				}
 			}
 		}
-		fmt.Println("Output value: ", outputValue)
 		total += outputValue
 	}
 	fmt.Println(total)
