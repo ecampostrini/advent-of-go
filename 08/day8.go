@@ -64,7 +64,7 @@ func permutations(input string) []string {
 	return ret
 }
 
-var configuration = map[int][]int{
+var displayConfig = map[int][]int{
 	0: {0, 1, 2, 4, 5, 6},
 	1: {2, 5},
 	2: {0, 2, 3, 4, 6},
@@ -74,11 +74,19 @@ var configuration = map[int][]int{
 	6: {0, 1, 3, 4, 5, 6},
 	7: {0, 2, 5},
 	8: {0, 1, 2, 3, 4, 5, 6},
-	9: {0, 1, 2, 3, 5},
+	9: {0, 1, 2, 3, 5, 6},
+}
+
+func getConfigForDigit(digit int, config string) string {
+	var ret string
+	for _, pos := range displayConfig[digit] {
+		ret += config[pos : pos+1]
+	}
+	return SortString(ret)
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("./input.txt")
 	if err != nil {
 		fmt.Println("Error while opening input file: ", err)
 	}
@@ -96,6 +104,70 @@ func main() {
 	}
 	fmt.Println(easyDigitsCount)
 
-	permutations := permutations("abcdefg")
-	fmt.Println(len(permutations))
+	configurations := permutations("abcdefg")
+	fmt.Println(len(configurations))
+	var total int
+	for idx, entry := range entries {
+		patterns := entry.SignalPatterns
+		var targetConfig string
+		for _, configuration := range configurations {
+			if one := getConfigForDigit(1, configuration); one != patterns[2][0] {
+				continue
+			}
+			if getConfigForDigit(7, configuration) != patterns[3][0] {
+				continue
+			}
+			if four := getConfigForDigit(4, configuration); four != patterns[4][0] {
+				continue
+			}
+			if eight := getConfigForDigit(8, configuration); eight != patterns[7][0] {
+				continue
+			}
+
+			//fmt.Println("Configuration ", configuration)
+			//fmt.Println("Patterns ", patterns)
+			zero, six, nine := getConfigForDigit(0, configuration), getConfigForDigit(6, configuration), getConfigForDigit(9, configuration)
+			hasMismatch := false
+			for i := 0; !hasMismatch && i < len(patterns[6]); i++ {
+				p := patterns[6][i]
+				//fmt.Println(p, zero, six, nine)
+				if p != zero && p != six && p != nine {
+					hasMismatch = true
+				}
+			}
+			if hasMismatch {
+				continue
+			}
+
+			//fmt.Println("And Here!")
+			two, three, five := getConfigForDigit(2, configuration), getConfigForDigit(3, configuration), getConfigForDigit(5, configuration)
+			hasMismatch = false
+			for i := 0; !hasMismatch && i < len(patterns[5]); i++ {
+				p := patterns[5][i]
+				if p != two && p != three && p != five && p != nine {
+					hasMismatch = true
+				}
+			}
+			if hasMismatch {
+				continue
+			}
+
+			targetConfig = configuration
+			break
+		}
+		fmt.Println(idx, "- ", entry)
+		fmt.Println("Found the config: ", targetConfig)
+		var outputValue int
+		for _, outVal := range entry.OutputValues {
+			for i := 0; i < 10; i++ {
+				if getConfigForDigit(i, targetConfig) == SortString(outVal) {
+					outputValue = outputValue*10 + i
+					break
+				}
+			}
+		}
+		fmt.Println("Output value: ", outputValue)
+		total += outputValue
+	}
+	fmt.Println(total)
 }
