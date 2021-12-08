@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
 type Entry struct {
-	SignalPatterns, OutputValues []string
+	SignalPatterns map[int][]string
+	OutputValues   []string
 }
 
 func SplitAndTrim(input, delim string) []string {
@@ -21,13 +23,58 @@ func SplitAndTrim(input, delim string) []string {
 	return ret
 }
 
+func SortString(input string) string {
+	s := strings.Split(input, "")
+	sort.Strings(s)
+	return strings.Join(s, "")
+}
+
 func parseEntries(scanner *bufio.Scanner) []Entry {
 	var ret []Entry
 	for scanner.Scan() {
 		parts := strings.Split(scanner.Text(), "|")
-		ret = append(ret, Entry{SplitAndTrim(parts[0], " "), SplitAndTrim(parts[1], " ")})
+		entry := Entry{make(map[int][]string), SplitAndTrim(parts[1], " ")}
+		for _, pattern := range SplitAndTrim(parts[0], " ") {
+			entry.SignalPatterns[len(pattern)] = append(entry.SignalPatterns[len(pattern)], SortString(pattern))
+		}
+		ret = append(ret, entry)
 	}
 	return ret
+}
+
+func permutations(input string) []string {
+	var ret []string
+
+	var helper func([]rune, int)
+	helper = func(perm []rune, pos int) {
+		if pos >= len(perm) {
+			ret = append(ret, string(perm))
+			return
+		}
+
+		for i := pos; i < len(perm); i++ {
+			perm[pos], perm[i] = perm[i], perm[pos]
+			helper(perm, pos+1)
+			perm[pos], perm[i] = perm[i], perm[pos]
+		}
+	}
+
+	helper([]rune(input), 0)
+
+	return ret
+}
+
+var configuration = map[int][]int{
+	0: {0, 1, 2, 4, 5, 6},
+	1: {2, 5},
+	2: {0, 2, 3, 4, 6},
+	3: {0, 2, 3, 5, 6},
+	4: {1, 2, 3, 5},
+	5: {0, 1, 3, 5, 6},
+	6: {0, 1, 3, 4, 5, 6},
+	7: {0, 2, 5},
+	8: {0, 1, 2, 3, 4, 5, 6},
+	9: {0, 1, 2, 3, 5},
 }
 
 func main() {
@@ -48,4 +95,7 @@ func main() {
 		}
 	}
 	fmt.Println(easyDigitsCount)
+
+	permutations := permutations("abcdefg")
+	fmt.Println(len(permutations))
 }
