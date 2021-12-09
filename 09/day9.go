@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	//"strings"
 )
 
 func makeHeightmap(scanner *bufio.Scanner) [][]int {
@@ -55,7 +54,5 @@ func main() {
 			}
 		}
 	}
-
 	fmt.Println(totalRiskLevel)
-
 }
