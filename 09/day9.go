@@ -96,11 +96,10 @@ func main() {
 	defer file.Close()
 
 	heightmap := makeHeightmap(bufio.NewScanner(file))
-	totalRiskLevel, lowPointsCount := 0, 0
+	totalRiskLevel := 0
 	for y, row := range heightmap {
 		for x, currHeight := range row {
 			if isLowPoint(x, y, heightmap) {
-				lowPointsCount++
 				totalRiskLevel += 1 + currHeight
 			}
 		}
