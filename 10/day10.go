@@ -21,7 +21,6 @@ var pairs = map[int]int{
 }
 
 func areAMatch(c1, c2 int) bool {
-	//fmt.Printf("Pairs: %c, %c\n", pairs[c1], c1)
 	if pairs[c1] == c2 {
 		return true
 	}
