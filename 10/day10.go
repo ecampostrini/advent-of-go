@@ -4,13 +4,21 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 )
 
-var points = map[int]int{
+var pentaltyPoints = map[int]int{
 	')': 3,
 	']': 57,
 	'}': 1197,
 	'>': 25137,
+}
+
+var completionPoints = map[int]int{
+	'(': 1,
+	'[': 2,
+	'{': 3,
+	'<': 4,
 }
 
 var pairs = map[int]int{
@@ -27,34 +35,51 @@ func areAMatch(c1, c2 int) bool {
 	return false
 }
 
-func getFirstMismatch(line string) int {
+func getFirstMismatch(line string) (int, []int) {
 	stack, stackPos := make([]int, len(line)), 0
 	for i := 0; i < len(line); i++ {
 		currentChar := int(line[i])
-		if points[currentChar] == 0 {
+		if pentaltyPoints[currentChar] == 0 {
 			stack[stackPos] = currentChar
 			stackPos++
 		} else {
 			if !areAMatch(stack[stackPos-1], currentChar) {
-				return currentChar
+				return currentChar, stack
 			}
 			stackPos--
 		}
 	}
-	return 0
+	return 0, stack[:stackPos]
 }
 
 func main() {
-	file, err := os.Open("./input.test.txt")
+	file, err := os.Open("./input.txt")
 	if err != nil {
 		fmt.Println("Failed to open input file: ", err)
 		os.Exit(1)
 	}
 	defer file.Close()
 
-	syntaxErroScore := 0
+	syntaxErrorScore := 0
+	var completionScoreList []int
 	for scanner := bufio.NewScanner(file); scanner.Scan(); {
-		syntaxErroScore += points[getFirstMismatch(scanner.Text())]
+		firstMismatch, stack := getFirstMismatch(scanner.Text())
+		if firstMismatch == 0 {
+			completionScore := 0
+			for i := range stack {
+				currentChar := stack[len(stack)-i-1]
+				completionScore = (completionScore * 5) + completionPoints[currentChar]
+			}
+			completionScoreList = append(completionScoreList, completionScore)
+		} else {
+			syntaxErrorScore += pentaltyPoints[firstMismatch]
+		}
 	}
-	fmt.Println(syntaxErroScore)
+
+	// part 1
+	fmt.Println(syntaxErrorScore)
+
+	// part 2
+	sort.Ints(completionScoreList)
+	fmt.Println(completionScoreList[len(completionScoreList)/2])
 }
