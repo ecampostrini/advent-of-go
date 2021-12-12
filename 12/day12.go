@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"unicode"
 )
@@ -33,34 +34,55 @@ func isLowerCase(s string) bool {
 	return true
 }
 
+func getLowerCaseCaves(g Graph) []string {
+	var ret []string
+
+	for k, _ := range g {
+		if isLowerCase(k) && k != "start" && k != "end" {
+			ret = append(ret, k)
+		}
+	}
+	sort.Strings(ret)
+	return ret
+}
+
 func countPaths(graph Graph) int {
 	var helper func(string)
 	var pathCount int
 	currentPath := []string{"start"}
-	visited := make(map[string]bool)
+	maxVisitCount := make(map[string]int)
+	visitedPaths := make(map[string]bool)
 
 	helper = func(currentNode string) {
 		if currentNode == "end" {
-			pathCount++
-			fmt.Printf("%v\n", currentPath)
+			pathAsKey := strings.Join(currentPath, "")
+			if !visitedPaths[pathAsKey] {
+				pathCount++
+				visitedPaths[pathAsKey] = true
+			}
 			return
 		}
 
 		if isLowerCase(currentNode) {
-			visited[currentNode] = true
+			maxVisitCount[currentNode] -= 1
 		}
+
 		for _, neighbour := range graph[currentNode] {
-			if visited[neighbour] {
+			if isLowerCase(neighbour) && maxVisitCount[neighbour] < 0 {
 				continue
 			}
 			currentPath = append(currentPath, neighbour)
 			helper(neighbour)
 			currentPath = currentPath[:len(currentPath)-1]
 		}
-		visited[currentNode] = false
+		maxVisitCount[currentNode] += 1
 	}
 
-	helper("start")
+	for _, cave := range getLowerCaseCaves(graph) {
+		maxVisitCount[cave]++
+		helper("start")
+		maxVisitCount[cave]--
+	}
 
 	return pathCount
 }
@@ -72,7 +94,5 @@ func main() {
 		os.Exit(1)
 	}
 	graph := parseGraph(bufio.NewScanner(file))
-	fmt.Printf("%v\n", graph)
-
 	fmt.Println(countPaths(graph))
 }
