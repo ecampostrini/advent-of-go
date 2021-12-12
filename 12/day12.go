@@ -46,20 +46,14 @@ func getLowerCaseCaves(g Graph) []string {
 	return ret
 }
 
-func countPaths(graph Graph) int {
+func getPaths(graph Graph, maxVisitCount map[string]int) []string {
 	var helper func(string)
-	var pathCount int
+	var paths []string
 	currentPath := []string{"start"}
-	maxVisitCount := make(map[string]int)
-	visitedPaths := make(map[string]bool)
 
 	helper = func(currentNode string) {
 		if currentNode == "end" {
-			pathAsKey := strings.Join(currentPath, "")
-			if !visitedPaths[pathAsKey] {
-				pathCount++
-				visitedPaths[pathAsKey] = true
-			}
+			paths = append(paths, strings.Join(currentPath, ""))
 			return
 		}
 
@@ -78,13 +72,9 @@ func countPaths(graph Graph) int {
 		maxVisitCount[currentNode] += 1
 	}
 
-	for _, cave := range getLowerCaseCaves(graph) {
-		maxVisitCount[cave]++
-		helper("start")
-		maxVisitCount[cave]--
-	}
+	helper("start")
 
-	return pathCount
+	return paths
 }
 
 func main() {
@@ -93,6 +83,23 @@ func main() {
 		fmt.Println("Failed to read input file: ", err)
 		os.Exit(1)
 	}
+
 	graph := parseGraph(bufio.NewScanner(file))
-	fmt.Println(countPaths(graph))
+
+	maxVisitCount := make(map[string]int)
+	// part 1
+	fmt.Println(len(getPaths(graph, maxVisitCount)))
+
+	// part 2
+	visitedPaths := make(map[string]bool)
+	for _, cave := range getLowerCaseCaves(graph) {
+		maxVisitCount[cave]++
+		for _, path := range getPaths(graph, maxVisitCount) {
+			if !visitedPaths[path] {
+				visitedPaths[path] = true
+			}
+		}
+		maxVisitCount[cave]--
+	}
+	fmt.Println(len(visitedPaths))
 }
