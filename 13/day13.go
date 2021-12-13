@@ -94,7 +94,7 @@ func readFolds(scanner *bufio.Scanner) []Point {
 }
 
 func main() {
-	file, err := os.Open("./input.test.txt")
+	file, err := os.Open("./input.txt")
 	if err != nil {
 		fmt.Println("Failed to read input file: ", err)
 		os.Exit(1)
@@ -103,8 +103,50 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	grid := readGrid(scanner)
-	printGrid(grid)
 
 	folds := readFolds(scanner)
-	fmt.Printf("%v\n", folds)
+
+	for foldIdx, currentFold := range folds {
+		for x := currentFold.X; x < len(grid[0]); x++ {
+			for y := currentFold.Y; y < len(grid); y++ {
+				foldX, foldY := x, y
+				if currentFold.X != 0 {
+					foldX = currentFold.X - (x - currentFold.X)
+				}
+
+				if currentFold.Y != 0 {
+					foldY = currentFold.Y - (y - currentFold.Y)
+				}
+
+				if grid[y][x] == "#" {
+					grid[foldY][foldX] = "#"
+				}
+			}
+		}
+
+		if currentFold.X != 0 {
+			for i := 0; i < len(grid); i++ {
+				grid[i] = grid[i][:currentFold.X]
+			}
+		}
+
+		if currentFold.Y != 0 {
+			grid = grid[:currentFold.Y]
+		}
+
+		if foldIdx == 0 {
+			var dotCount int
+			for _, row := range grid {
+				for _, dot := range row {
+					if dot == "#" {
+						dotCount++
+					}
+				}
+			}
+			// part 1
+			fmt.Println(dotCount)
+		}
+	}
+	// part 2
+	printGrid(grid)
 }
