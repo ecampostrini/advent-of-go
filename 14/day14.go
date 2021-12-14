@@ -1,10 +1,10 @@
 package main
 
 import (
-  "math"
 	"bufio"
 	"fmt"
 	"github.com/ecampostrini/advent-of-go/utils/files"
+	"math"
 	"strings"
 )
 
@@ -18,39 +18,26 @@ func ParseStringMap(scanner *bufio.Scanner, separator string) map[string]string 
 	return ret
 }
 
-func getLength(m map[string]int) int {
-  var ret int
-  for _, count := range m {
-    ret += count
-  }
-  return ret
+func SumValuesInt(m map[string]int) int {
+	var ret int
+	for _, count := range m {
+		ret += count
+	}
+	return ret
 }
 
-func main() {
-	scanner, file := files.ReadFile("./input.txt")
-	defer file.Close()
-
-	scanner.Scan()
-	template := scanner.Text()
-	//fmt.Println("Template: ", template)
-
-	scanner.Scan()
-	insertionRules := ParseStringMap(scanner, "->")
-	//fmt.Println(insertionRules)
-
+func doit(template string, insertionRules map[string]string, iterations int) int {
 	polymerMap := make(map[string]int)
 	for i := 0; i < len(template)-1; i++ {
 		polymerMap[template[i:i+2]]++
 	}
-	fmt.Printf("Polymer map: %v\n", polymerMap)
 
 	occurrenceMap := make(map[string]int)
 	for _, c := range template {
 		occurrenceMap[string(c)]++
 	}
-	fmt.Printf("Occurrence map: %v\n", occurrenceMap)
 
-	for i := 0; i < 40; i++ {
+	for i := 0; i < iterations; i++ {
 		newPolymerMap := make(map[string]int)
 		for polymer, count := range polymerMap {
 			newElement := insertionRules[polymer]
@@ -59,9 +46,6 @@ func main() {
 			occurrenceMap[newElement] += count
 		}
 		polymerMap = newPolymerMap
-    fmt.Printf("%d - Polymer map: %v\n", i, polymerMap)
-    fmt.Printf("Occurrence map: %v\n", occurrenceMap)
-    fmt.Printf("polymenr length: %d\n", getLength(occurrenceMap))
 	}
 
 	max, min := -1, math.MaxInt
@@ -74,6 +58,18 @@ func main() {
 			max = count
 		}
 	}
+	return max - min
+}
 
-	fmt.Printf("\nPart1: %d\n", max-min)
+func main() {
+	scanner, file := files.ReadFile("./input.txt")
+	defer file.Close()
+	scanner.Scan()
+	template := scanner.Text()
+	scanner.Scan()
+	insertionRules := ParseStringMap(scanner, "->")
+	// part 1
+	fmt.Println(doit(template, insertionRules, 10))
+	// part 2
+	fmt.Println(doit(template, insertionRules, 40))
 }
