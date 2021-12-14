@@ -3,31 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"os"
+	"github.com/ecampostrini/advent-of-go/utils/files"
+	"github.com/ecampostrini/advent-of-go/utils/slices"
 	"strconv"
 	"strings"
 )
-
-func makeBidimensionalSliceString(dx, dy int) [][]string {
-	ret := make([][]string, dy)
-	for i := 0; i < dy; i++ {
-		ret[i] = make([]string, dx)
-	}
-	return ret
-}
-
-func printGrid(grid [][]string) {
-	for _, row := range grid {
-		for _, c := range row {
-			if c == "" {
-				fmt.Printf(".")
-			} else {
-				fmt.Printf("%s", c)
-			}
-		}
-		fmt.Printf("\n")
-	}
-}
 
 func readGrid(scanner *bufio.Scanner) [][]string {
 	points := make(map[int][]int)
@@ -60,7 +40,7 @@ func readGrid(scanner *bufio.Scanner) [][]string {
 		scanner.Scan()
 	}
 
-	ret := makeBidimensionalSliceString(maxX+1, maxY+1)
+	ret := slices.MakeBidimensionalSliceString(maxX+1, maxY+1)
 	for i := 0; i <= maxY; i++ {
 		for _, x := range points[i] {
 			ret[i][x] = "#"
@@ -94,18 +74,11 @@ func readFolds(scanner *bufio.Scanner) []Point {
 }
 
 func main() {
-	file, err := os.Open("./input.txt")
-	if err != nil {
-		fmt.Println("Failed to read input file: ", err)
-		os.Exit(1)
-	}
+	scanner, file := files.ReadFile("./input.txt")
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
 	grid := readGrid(scanner)
-
 	folds := readFolds(scanner)
-
 	for foldIdx, currentFold := range folds {
 		for x := currentFold.X; x < len(grid[0]); x++ {
 			for y := currentFold.Y; y < len(grid); y++ {
@@ -148,5 +121,5 @@ func main() {
 		}
 	}
 	// part 2
-	printGrid(grid)
+	slices.PrintGridString(grid)
 }
