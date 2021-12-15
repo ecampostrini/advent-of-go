@@ -20,6 +20,15 @@ func PrintGridString(grid [][]string) {
 	}
 }
 
+func PrintGridInt(grid [][]int) {
+	for _, row := range grid {
+		for _, c := range row {
+			fmt.Printf("%d ", c)
+		}
+		fmt.Printf("\n")
+	}
+}
+
 func PrintSliceStringTuple(st []types.StringTuple, separator string) {
 	fmt.Println("[")
 	for _, tuple := range st {
