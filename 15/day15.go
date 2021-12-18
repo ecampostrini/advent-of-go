@@ -5,7 +5,6 @@ import (
 	"container/heap"
 	"fmt"
 	"github.com/ecampostrini/advent-of-go/utils/files"
-	"github.com/ecampostrini/advent-of-go/utils/slices"
 	"math"
 )
 
@@ -18,6 +17,7 @@ type WeightedPoint struct {
 	w int
 }
 
+// heap implementation taken from https://pkg.go.dev/container/heap
 type MinHeap []WeightedPoint
 
 func (h MinHeap) Len() int           { return len(h) }
@@ -32,9 +32,8 @@ func (h *MinHeap) Push(x interface{}) {
 
 func (h *MinHeap) Pop() interface{} {
 	old := *h
-  //n := len(old)
 	x := old[0]
-  *h = old[1:]
+	*h = old[1:]
 	return x
 }
 
@@ -96,16 +95,8 @@ func neighbours(p Point, grid [][]int) []Point {
 	return ret
 }
 
-func main() {
-	scanner, file := files.ReadFile("./input.txt")
-	defer file.Close()
-
-	grid := ParseGridInt(scanner)
-	//slices.PrintGridInt(grid)
-
-	const dimension = 5
+func expandGrid(grid [][]int, dimension int) [][]int {
 	dy, dx := len(grid), len(grid[0])
-	fmt.Printf("dy: %d, dx: %d\n", dy*dimension, dx*dimension)
 	newGrid := make([][]int, dy*dimension)
 	for i, _ := range newGrid {
 		newGrid[i] = make([]int, dx*dimension)
@@ -119,42 +110,37 @@ func main() {
 			newGrid[i][j] = (value / 10) + (value % 10)
 		}
 	}
+	return newGrid
+}
 
-	fmt.Println("\n---\n")
-	slices.PrintGridInt(newGrid, "")
-
-	visited := make(map[Point]bool)
+func calculateShortestPath(grid [][]int) int {
 	distanceMap := map[Point]int{Point{0, 0}: 0}
 	minHeap := &MinHeap{WeightedPoint{Point{0, 0}, 0}}
 	heap.Init(minHeap)
 	for minHeap.Len() > 0 {
 		currentPoint := minHeap.Pop().(WeightedPoint)
-		//fmt.Printf("Current point: %v\n", currentPoint)
-		if visited[currentPoint.p] {
-      //continue
-		}
-		//if currentPoint.p.X == len(newGrid[0])-1 && currentPoint.p.Y == len(newGrid)-1 {
-		//break
-		//}
-		for _, n := range neighbours(currentPoint.p, newGrid) {
-			//fmt.Printf("  neighbour:%v\n", n)
+		for _, n := range neighbours(currentPoint.p, grid) {
 			nDistance, ok := distanceMap[n]
 			if !ok {
 				nDistance = math.MaxInt
 			}
-			newDistance := distanceMap[currentPoint.p] + newGrid[n.Y][n.X]
+			newDistance := distanceMap[currentPoint.p] + grid[n.Y][n.X]
 			if newDistance < nDistance {
 				distanceMap[n] = newDistance
 				heap.Push(minHeap, WeightedPoint{n, newDistance})
 			}
 		}
-		visited[currentPoint.p] = true
-		//fmt.Printf("    distancemap: %v\n", distanceMap)
-		//fmt.Printf("    heap: %v\n", minHeap)
 	}
+	return distanceMap[Point{len(grid[0]) - 1, len(grid) - 1}]
+}
 
-	fmt.Println(distanceMap[Point{len(newGrid[0]) - 1, len(newGrid) - 1}])
-	//fmt.Println("\n---\n")
-	//slices.PrintGridInt(newGrid, " ")
+func main() {
+	scanner, file := files.ReadFile("./input.txt")
+	defer file.Close()
 
+	grid := ParseGridInt(scanner)
+	// part 1
+	fmt.Println(calculateShortestPath(grid))
+	// part 2
+	fmt.Println(calculateShortestPath(expandGrid(grid, 5)))
 }
