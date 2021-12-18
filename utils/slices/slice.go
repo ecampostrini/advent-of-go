@@ -23,7 +23,7 @@ func PrintGridString(grid [][]string) {
 func PrintGridInt(grid [][]int, separator string) {
 	for _, row := range grid {
 		for _, c := range row {
-			fmt.Printf("%d%s", c, separator)
+			fmt.Printf("%d%s\t", c, separator)
 		}
 		fmt.Printf("\n")
 	}
