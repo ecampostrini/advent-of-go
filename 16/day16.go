@@ -60,41 +60,65 @@ func parseHeader(input string, pos *int) (int, int) {
 
 func parseValue(input string, pos *int) int {
 	var acc string
-	fmt.Println(input)
-	for input[*pos] != 0 {
-		fmt.Println("Pos", *pos)
-		fmt.Println("ip", string(input[*pos]))
-		fmt.Println("Acc", acc)
+	for readLast := false; !readLast; {
+		if input[*pos] == '0' {
+			readLast = true
+		}
 		*pos += 1
 		acc += input[*pos : (*pos)+4]
 		*pos += 4
 	}
-	fmt.Println("Acc", acc)
-	//*pos += 1
-	//acc += input[*pos : (*pos)+4]
-	//*pos += 4
+	//if (*pos % 4) != 0 {
+	//upperBound := 4 * (*pos/4 + 1)
+	//*pos += upperBound - *pos
+	//}
 	return binString2Int(acc)
 }
 
 func parsePacket(input string, pos *int) Packet {
-	fmt.Println("Pos", *pos)
 	version, typeId := parseHeader(input, pos)
-	fmt.Println("Pos", *pos)
 	if typeId == 4 {
-		fmt.Println("here")
 		value := parseValue(input, pos)
-		fmt.Println("there")
 		return Packet{version, typeId, []*Packet{}, value}
+	}
+
+	lengthTypeId := string(input[*pos])
+	*pos++
+	if lengthTypeId == "0" {
+		subpacketsLength := binString2Int(input[*pos : *pos+15])
+		*pos += 15
+		var subpackets []*Packet
+		var totalRead int
+		for totalRead != subpacketsLength {
+			currentRead := 0
+			newPacket := parsePacket(input[*pos+totalRead:], &currentRead)
+			subpackets = append(subpackets, &newPacket)
+			totalRead += currentRead
+		}
+		*pos += subpacketsLength
+		return Packet{version, typeId, subpackets, -1}
 	} else {
-		panic("Version not supported yet!")
+		panic("Length type id not supported!")
+	}
+}
+
+func printPacket(packet *Packet, indent string) {
+	if packet.TypeId == 4 {
+		fmt.Printf("%s%d, %d, %d\n", indent, packet.Version, packet.TypeId, packet.Value)
+	} else {
+		fmt.Printf("%s%d, %d:\n", indent, packet.Version, packet.TypeId)
+		for _, p := range packet.Children {
+			printPacket(p, indent+"|-")
+		}
 	}
 }
 
 func main() {
-	scanner, file := files.ReadFile("./input.test.txt")
+	scanner, file := files.ReadFile("./lengthTypeId0.test.txt")
 	defer file.Close()
 	pos := 0
 	scanner.Scan()
-	mainPackage := parsePacket(hexString2BinString(scanner.Text()), &pos)
-	fmt.Printf("%v\n", mainPackage)
+	mainPacket := parsePacket(hexString2BinString(scanner.Text()), &pos)
+  printPacket(&mainPacket, "")
+	//fmt.Printf("%v\n", mainPackage)
 }
