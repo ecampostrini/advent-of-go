@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ecampostrini/advent-of-go/utils/files"
+	"math"
 )
 
 type Packet struct {
@@ -68,10 +69,6 @@ func parseValue(input string, pos *int) int {
 		acc += input[*pos : (*pos)+4]
 		*pos += 4
 	}
-	//if (*pos % 4) != 0 {
-	//upperBound := 4 * (*pos/4 + 1)
-	//*pos += upperBound - *pos
-	//}
 	return binString2Int(acc)
 }
 
@@ -97,8 +94,22 @@ func parsePacket(input string, pos *int) Packet {
 		}
 		*pos += subpacketsLength
 		return Packet{version, typeId, subpackets, -1}
+	} else if lengthTypeId == "1" {
+		subpacketsCount := binString2Int(input[*pos : *pos+11])
+		*pos += 11
+		var subpackets []*Packet
+		var totalRead int
+		for subpacketsCount > 0 {
+			currentRead := 0
+			newPacket := parsePacket(input[*pos+totalRead:], &currentRead)
+			subpackets = append(subpackets, &newPacket)
+			totalRead += currentRead
+			subpacketsCount--
+		}
+		*pos += totalRead
+		return Packet{version, typeId, subpackets, -1}
 	} else {
-		panic("Length type id not supported!")
+		panic(fmt.Sprintf("lengthTypeId not supported: %d", lengthTypeId))
 	}
 }
 
@@ -113,12 +124,85 @@ func printPacket(packet *Packet, indent string) {
 	}
 }
 
+func countVersions(packet *Packet) int {
+	ret := packet.Version
+	for _, p := range packet.Children {
+		ret += countVersions(p)
+	}
+	return ret
+}
+
+func eval(packet *Packet) int {
+	typeId := packet.TypeId
+	if typeId == 0 {
+		var sum int
+		for _, p := range packet.Children {
+			sum += eval(p)
+		}
+		return sum
+	} else if typeId == 1 {
+		prod := 1
+		for _, p := range packet.Children {
+			prod *= eval(p)
+		}
+		return prod
+	} else if typeId == 2 {
+		min := math.MaxInt
+		for _, p := range packet.Children {
+			val := eval(p)
+			if val < min {
+				min = val
+			}
+		}
+		return min
+	} else if typeId == 3 {
+		max := math.MinInt
+		for _, p := range packet.Children {
+			val := eval(p)
+			if val > max {
+				max = val
+			}
+		}
+		return max
+	} else if typeId == 4 {
+		return packet.Value
+	} else if typeId == 5 {
+		v1, v2 := eval(packet.Children[0]), eval(packet.Children[1])
+		if v1 > v2 {
+			return 1
+		} else {
+			return 0
+		}
+	} else if typeId == 6 {
+		v1, v2 := eval(packet.Children[0]), eval(packet.Children[1])
+		if v1 < v2 {
+			return 1
+		} else {
+			return 0
+		}
+	} else if typeId == 7 {
+		v1, v2 := eval(packet.Children[0]), eval(packet.Children[1])
+		if v1 == v2 {
+			return 1
+		} else {
+			return 0
+		}
+	} else {
+		panic(fmt.Sprintf("TypeId not supported: %d", typeId))
+	}
+}
+
 func main() {
-	scanner, file := files.ReadFile("./lengthTypeId0.test.txt")
+	scanner, file := files.ReadFile("./input.txt")
 	defer file.Close()
 	pos := 0
 	scanner.Scan()
 	mainPacket := parsePacket(hexString2BinString(scanner.Text()), &pos)
-  printPacket(&mainPacket, "")
-	//fmt.Printf("%v\n", mainPackage)
+
+	// for debugging purposes
+	//printPacket(&mainPacket, "")
+	// part 1
+	fmt.Println(countVersions(&mainPacket))
+	// part 2
+	fmt.Println(eval(&mainPacket))
 }
