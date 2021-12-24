@@ -65,14 +65,14 @@ func main() {
 	xBounds, yBounds := parseBounds(scanner)
 
 	var yCandidates = make(map[int]bool)
-	for i := 0; i < 1000; i++ {
+	for i := -1000; i < 1000; i++ {
 		y, velocity := i, i
 		var steps []int
 		for j := 0; j < 1000; j++ {
 			steps = append(steps, y)
 			if y >= yBounds.A && y <= yBounds.B && !yCandidates[i] {
 				yCandidates[i] = true
-				fmt.Printf("iv: %v, steps: %v\n", i, steps)
+				//fmt.Printf("iv: %v, steps: %v\n", i, steps)
 			}
 			velocity--
 			y += velocity
@@ -88,7 +88,7 @@ func main() {
 			steps = append(steps, x)
 			if x >= xBounds.A && x <= xBounds.B && !xCandidates[i] {
 				xCandidates[i] = true
-				fmt.Printf("iv: %v, steps: %v\n", i, steps)
+				//fmt.Printf("iv: %v, steps: %v\n", i, steps)
 			}
 			if velocity > 0 {
 				velocity--
@@ -135,4 +135,5 @@ func main() {
 		}
 	}
 	fmt.Printf("%v: %d\n", bestInitialVel, maxY)
+	fmt.Printf("%d\n", len(candidates))
 }
