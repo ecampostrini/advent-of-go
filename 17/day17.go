@@ -17,13 +17,6 @@ type Point struct {
 	X, Y int
 }
 
-func Abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
 func parseBounds(scanner *bufio.Scanner) (Bounds, Bounds) {
 	scanner.Scan()
 	input := strings.Replace(scanner.Text(), "target area: ", "", 1)
@@ -58,54 +51,16 @@ func isWithinBounds(n int, bounds Bounds) bool {
 	return n >= bounds.A && n <= bounds.B
 }
 
-func main() {
-	scanner, file := files.ReadFile("./input.txt")
-	defer file.Close()
-
-	xBounds, yBounds := parseBounds(scanner)
-
-	var yCandidates = make(map[int]bool)
-	for i := -1000; i < 1000; i++ {
-		y, velocity := i, i
-		var steps []int
-		for j := 0; j < 1000; j++ {
-			steps = append(steps, y)
-			if y >= yBounds.A && y <= yBounds.B && !yCandidates[i] {
-				yCandidates[i] = true
-				//fmt.Printf("iv: %v, steps: %v\n", i, steps)
-			}
-			velocity--
-			y += velocity
-		}
-	}
-	fmt.Printf("Y-candidates: %v\n", yCandidates)
-	fmt.Println("---")
-	var xCandidates = make(map[int]bool)
-	for i := 0; i < 1000; i++ {
-		x, velocity := i, i
-		var steps []int
-		for j := 0; j < 1000; j++ {
-			steps = append(steps, x)
-			if x >= xBounds.A && x <= xBounds.B && !xCandidates[i] {
-				xCandidates[i] = true
-				//fmt.Printf("iv: %v, steps: %v\n", i, steps)
-			}
-			if velocity > 0 {
-				velocity--
-			}
-			x += velocity
-		}
-	}
-	fmt.Printf("x-candidates: %v\n", xCandidates)
-
+func findCandidates(xBounds, yBounds Bounds) map[Point][]Point {
 	var candidates = make(map[Point][]Point)
-	for ivX, _ := range xCandidates {
-		for ivY, _ := range yCandidates {
-			var steps []Point
+	for ivX := 0; ivX < 1000; ivX++ {
+		for ivY := -1000; ivY < 1000; ivY++ {
 			candidate := Point{ivX, ivY}
-			x, xVel := ivX, ivX
-			y, yVel := ivY, ivY
+			var steps []Point
+			x, xVel := 0, ivX
+			y, yVel := 0, ivY
 			for step := 0; step < 10000; step++ {
+				x, y = x+xVel, y+yVel
 				steps = append(steps, Point{x, y})
 				if isWithinBounds(x, xBounds) && isWithinBounds(y, yBounds) {
 					candidates[candidate] = steps
@@ -116,24 +71,33 @@ func main() {
 				if xVel > 0 {
 					xVel--
 				}
-				x += xVel
 				yVel--
-				y += yVel
-
 			}
 		}
 	}
+	return candidates
+}
 
+func main() {
+	scanner, file := files.ReadFile("./input.txt")
+	defer file.Close()
+
+	xBounds, yBounds := parseBounds(scanner)
+	candidates := findCandidates(xBounds, yBounds)
 	maxY := math.MinInt
-	var bestInitialVel Point
-	for initialVel, steps := range candidates {
-		for _, p := range steps {
-			if p.Y > maxY {
-				maxY = p.Y
-				bestInitialVel = initialVel
+  //var bestInitialVel Point
+	for _, steps := range candidates {
+		for _, step := range steps {
+			if step.Y > maxY {
+				maxY = step.Y
+				//bestInitialVel = initialVel
 			}
 		}
 	}
-	fmt.Printf("%v: %d\n", bestInitialVel, maxY)
+	// for debugging purposes
+	//fmt.Printf("%v\n", bestInitialVel)
+	// part1
+	fmt.Printf("%v\n", maxY)
+	// part2
 	fmt.Printf("%d\n", len(candidates))
 }
