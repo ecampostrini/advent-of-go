@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	//"unicode"
 	//"github.com/ecampostrini/advent-of-go/utils/files"
 )
 
@@ -11,32 +10,6 @@ type BinTree struct {
 	Val                 int
 	Left, Right, Parent *BinTree
 }
-
-var l0 = BinTree{9, nil, nil, nil}
-var l1 = BinTree{8, nil, nil, nil}
-var n0 = BinTree{0, &l0, &l1, nil}
-
-//l0.Parent, l1.Parent = &n0, &n0
-
-var l2 = BinTree{1, nil, nil, nil}
-var n1 = BinTree{0, &n0, &l2, nil}
-
-//n0.Parent, l2.Parent = &n1, &n1
-
-var l3 = BinTree{2, nil, nil, nil}
-var n2 = BinTree{0, &n1, &l3, nil}
-
-//n1.Parent, l3.Parent = &n2, &n2
-
-var l4 = BinTree{3, nil, nil, nil}
-var n3 = BinTree{0, &n2, &l4, nil}
-
-//n2.Parent, l2.Parent = &n3, &n3
-
-var l5 = BinTree{4, nil, nil, nil}
-var n4 = BinTree{0, &n3, &l5, nil}
-
-//n3.Parent, l5.Parent = &n4, &n4
 
 func partition(in string) (string, string) {
 	var intStack, partitionPos int
@@ -65,7 +38,6 @@ func parseNumber(in string) *BinTree {
 }
 
 func printBinTree(r *BinTree) {
-  //fmt.Printf("\n%v: %v\n", r, r.Parent )
 	if r.Left == nil && r.Right == nil {
 		fmt.Printf("%d", r.Val)
 		return
@@ -103,17 +75,17 @@ func getFirstRightLeaf(node *BinTree) *BinTree {
 
 func explode(node *BinTree, depth int) bool {
 	if depth == 4 && node.Left != nil && node.Right != nil {
-    //fmt.Printf("Reached explosion depth: %v\n", node)
-    //fmt.Printf("Exploding: %v, %v\n", node.Left, node.Right)
+		//fmt.Printf("Reached explosion depth: %v\n", node)
+		//fmt.Printf("Exploding: %v, %v\n", node.Left, node.Right)
 
 		curr := node.Parent
 		prev := node
 		for curr != nil && (curr.Right == nil || curr.Right == prev) {
-      //fmt.Printf("current %v\n", curr)
+			//fmt.Printf("current %v\n", curr)
 			prev = curr
 			curr = curr.Parent
 		}
-    //fmt.Printf("current %v\n", curr)
+		//fmt.Printf("current %v\n", curr)
 		if curr != nil {
 			curr = curr.Right
 		}
@@ -153,47 +125,90 @@ func explode(node *BinTree, depth int) bool {
 	return hadExplosion
 }
 
+func split(node *BinTree) bool {
+	if node == nil {
+		return false
+	}
+
+	if node.Val >= 10 {
+		half := node.Val / 2
+		a := &BinTree{half, nil, nil, node}
+		b := &BinTree{half + node.Val%2, nil, nil, node}
+		*node = BinTree{0, a, b, node.Parent}
+		return true
+	}
+
+	var hadSplit bool
+	hadSplit = split(node.Left)
+	if !hadSplit {
+		hadSplit = split(node.Right)
+	}
+	return hadSplit
+}
+
 func inOrder(n *BinTree) {
-  if n == nil {return}
-  
-  inOrder(n.Left)
-  fmt.Printf("(%p) %v\n", n, *n)
-  inOrder(n.Right)
+	if n == nil {
+		return
+	}
+
+	inOrder(n.Left)
+	fmt.Printf("(%p) %v\n", n, *n)
+	inOrder(n.Right)
 }
 
 func printAndExplode(in string) {
 	n := parseNumber(in)
-  //fmt.Println(in)
-  //inOrder(n)
-  fmt.Printf("\n---\n")
-  printBinTree(n)
-  explode(n, 0)
-  fmt.Printf("\n")
-  printBinTree(n)
-  explode(n, 0)
-  fmt.Printf("\n")
-  printBinTree(n)
-  explode(n, 0)
-  fmt.Printf("\n")
-  printBinTree(n)
+	//fmt.Println(in)
+	//inOrder(n)
+	fmt.Printf("\n---\n")
+	printBinTree(n)
+	explode(n, 0)
+	fmt.Printf("\n")
+	printBinTree(n)
+	explode(n, 0)
+	fmt.Printf("\n")
+	printBinTree(n)
+	explode(n, 0)
+	fmt.Printf("\n")
+	printBinTree(n)
 }
 
 func main() {
 	//_, file := files.ReadFile("./input.txt")
 	//defer file.Close()
 
-	l0.Parent, l1.Parent = &n0, &n0
-	n0.Parent, l2.Parent = &n1, &n1
-	n1.Parent, l3.Parent = &n2, &n2
-	n2.Parent, l2.Parent = &n3, &n3
-	n3.Parent, l5.Parent = &n4, &n4
-	//printBinTree(&n4)
-	//explode(&n4, 0)
-	//printBinTree(&n4)
-	//p1, p2 := partition("[[[[4,3],[1,7]],[4,[9,2]]],[[6,[1,7]],[[8,0],3]]]")
-	//fmt.Printf("%v - %v\n", p1, p2)
-  printAndExplode("[[[[[9,8],1],2],3],4]")
-	printAndExplode("[7,[6,[5,[4,[3,2]]]]]")
-  printAndExplode("[[[[4,3],[1,7]],[4,[9,2]]],[[6,[1,7]],[[8,0],3]]]")
-  printAndExplode("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
+	var testInput = []string{
+		"[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]",
+		"[[[[[9,8],1],2],3],4]",
+		"[7,[6,[5,[4,[3,2]]]]]",
+		"[[[[4,3],[1,7]],[4,[9,2]]],[[6,[1,7]],[[8,0],3]]]",
+		"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]",
+	}
+
+	for _, in := range testInput {
+		n := parseNumber(in)
+		hadReduction := true
+		fmt.Printf("\n---\n")
+
+		for hadReduction {
+			fmt.Printf("\n")
+			printBinTree(n)
+
+			hadExplosion := false
+			for explode(n, 0) {
+				hadExplosion = true
+				fmt.Printf("\n")
+				//printBinTree(n)
+			}
+
+			hadSplit := false
+			for split(n) {
+				hadSplit = true
+				fmt.Printf("\n")
+				//printBinTree(n)
+			}
+
+			hadReduction = hadExplosion || hadSplit
+		}
+	}
 }
