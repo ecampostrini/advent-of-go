@@ -65,6 +65,7 @@ func parseNumber(in string) BinTree {
 }
 
 func printBinTree(r *BinTree) {
+  fmt.Printf("\n%v: %v\n", r, r.Parent )
 	if r.Left == nil && r.Right == nil {
 		fmt.Printf("%d", r.Val)
 		return
@@ -81,9 +82,9 @@ func printBinTree(r *BinTree) {
 }
 
 func getFirstLeftLeaf(node *BinTree) *BinTree {
-  if node == nil {
-    return nil
-  }
+	if node == nil {
+		return nil
+	}
 	if node.Left == nil && node.Right == nil {
 		return node
 	}
@@ -91,9 +92,9 @@ func getFirstLeftLeaf(node *BinTree) *BinTree {
 }
 
 func getFirstRightLeaf(node *BinTree) *BinTree {
-  if node == nil {
-    return nil
-  }
+	if node == nil {
+		return nil
+	}
 	if node.Left == nil && node.Right == nil {
 		return node
 	}
@@ -101,14 +102,15 @@ func getFirstRightLeaf(node *BinTree) *BinTree {
 }
 
 func explode(node *BinTree, depth int) bool {
-	if depth == 4 && node.Left != nil && node.Right != nil{
+	if depth == 4 && node.Left != nil && node.Right != nil {
     fmt.Printf("Reached explosion depth: %v\n", node)
     fmt.Printf("Exploding: %v, %v\n", node.Left, node.Right)
 
 		curr := node.Parent
-    prev := node
-		for curr != nil && (curr.Right == nil || curr.Right == prev){
-      prev = curr
+		prev := node
+		for curr != nil && (curr.Right == nil || curr.Right == prev) {
+      fmt.Printf("current %v\n", curr)
+			prev = curr
 			curr = curr.Parent
 		}
     fmt.Printf("current %v\n", curr)
@@ -116,28 +118,28 @@ func explode(node *BinTree, depth int) bool {
 			curr = curr.Right
 		}
 		if firstRightLeaf := getFirstLeftLeaf(curr); firstRightLeaf != nil {
-      fmt.Printf("firstRightLeaf: %v\n", firstRightLeaf)
-      fmt.Printf("node.Right: %v\n", node.Right)
+			//fmt.Printf("firstRightLeaf: %v\n", firstRightLeaf)
+			//fmt.Printf("node.Right: %v\n", node.Right)
 			firstRightLeaf.Val += node.Right.Val
 			//fmt.Printf("firstRightLeafval: %v\n", firstRightLeaf.Val)
 		}
 
 		curr = node.Parent
-    prev = node
-		for curr != nil && (curr.Left == nil || curr.Left == prev){
-      prev = curr
+		prev = node
+		for curr != nil && (curr.Left == nil || curr.Left == prev) {
+			prev = curr
 			curr = curr.Parent
 		}
 		if curr != nil {
 			curr = curr.Left
 		}
 		if firstLeftLeaf := getFirstRightLeaf(curr); firstLeftLeaf != nil {
-      fmt.Printf("firstLeftLeaf: %v\n", firstLeftLeaf)
-      fmt.Printf("node.Left: %v\n", node.Left)
+			//fmt.Printf("firstLeftLeaf: %v\n", firstLeftLeaf)
+			//fmt.Printf("node.Left: %v\n", node.Left)
 			firstLeftLeaf.Val += node.Left.Val
 		}
 
-    *node = BinTree{0, nil, nil, node.Parent}
+		*node = BinTree{0, nil, nil, node.Parent}
 		return true
 	}
 
@@ -149,6 +151,16 @@ func explode(node *BinTree, depth int) bool {
 		hadExplosion = explode(node.Right, depth+1)
 	}
 	return hadExplosion
+}
+
+func printAndExplode(in string) {
+	n := parseNumber(in)
+  fmt.Printf("\n---\n")
+	printBinTree(&n)
+  return
+	explode(&n, 0)
+  fmt.Printf("\n")
+	printBinTree(&n)
 }
 
 func main() {
@@ -165,9 +177,8 @@ func main() {
 	//printBinTree(&n4)
 	//p1, p2 := partition("[[[[4,3],[1,7]],[4,[9,2]]],[[6,[1,7]],[[8,0],3]]]")
 	//fmt.Printf("%v - %v\n", p1, p2)
-	n := parseNumber("[7,[6,[5,[4,[3,2]]]]]")
-	printBinTree(&n)
-  explode(&n, 0)
-  printBinTree(&n)
-
+  printAndExplode("[[[[[9,8],1],2],3],4]")
+	printAndExplode("[7,[6,[5,[4,[3,2]]]]]")
+  printAndExplode("[[[[4,3],[1,7]],[4,[9,2]]],[[6,[1,7]],[[8,0],3]]]")
+  printAndExplode("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
 }
