@@ -53,19 +53,19 @@ func partition(in string) (string, string) {
 	return in[1:partitionPos], in[partitionPos+1 : len(in)-1]
 }
 
-func parseNumber(in string) BinTree {
+func parseNumber(in string) *BinTree {
 	if n, err := strconv.Atoi(in); err == nil {
-		return BinTree{n, nil, nil, nil}
+		return &BinTree{n, nil, nil, nil}
 	}
 	p1, p2 := partition(in)
 	n1, n2 := parseNumber(p1), parseNumber(p2)
-	ret := BinTree{0, &n1, &n2, nil}
-	n1.Parent, n2.Parent = &ret, &ret
+	ret := &BinTree{0, n1, n2, nil}
+	n1.Parent, n2.Parent = ret, ret
 	return ret
 }
 
 func printBinTree(r *BinTree) {
-  fmt.Printf("\n%v: %v\n", r, r.Parent )
+  //fmt.Printf("\n%v: %v\n", r, r.Parent )
 	if r.Left == nil && r.Right == nil {
 		fmt.Printf("%d", r.Val)
 		return
@@ -103,17 +103,17 @@ func getFirstRightLeaf(node *BinTree) *BinTree {
 
 func explode(node *BinTree, depth int) bool {
 	if depth == 4 && node.Left != nil && node.Right != nil {
-    fmt.Printf("Reached explosion depth: %v\n", node)
-    fmt.Printf("Exploding: %v, %v\n", node.Left, node.Right)
+    //fmt.Printf("Reached explosion depth: %v\n", node)
+    //fmt.Printf("Exploding: %v, %v\n", node.Left, node.Right)
 
 		curr := node.Parent
 		prev := node
 		for curr != nil && (curr.Right == nil || curr.Right == prev) {
-      fmt.Printf("current %v\n", curr)
+      //fmt.Printf("current %v\n", curr)
 			prev = curr
 			curr = curr.Parent
 		}
-    fmt.Printf("current %v\n", curr)
+    //fmt.Printf("current %v\n", curr)
 		if curr != nil {
 			curr = curr.Right
 		}
@@ -153,14 +153,29 @@ func explode(node *BinTree, depth int) bool {
 	return hadExplosion
 }
 
+func inOrder(n *BinTree) {
+  if n == nil {return}
+  
+  inOrder(n.Left)
+  fmt.Printf("(%p) %v\n", n, *n)
+  inOrder(n.Right)
+}
+
 func printAndExplode(in string) {
 	n := parseNumber(in)
+  //fmt.Println(in)
+  //inOrder(n)
   fmt.Printf("\n---\n")
-	printBinTree(&n)
-  return
-	explode(&n, 0)
+  printBinTree(n)
+  explode(n, 0)
   fmt.Printf("\n")
-	printBinTree(&n)
+  printBinTree(n)
+  explode(n, 0)
+  fmt.Printf("\n")
+  printBinTree(n)
+  explode(n, 0)
+  fmt.Printf("\n")
+  printBinTree(n)
 }
 
 func main() {
