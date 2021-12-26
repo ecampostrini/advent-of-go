@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/ecampostrini/advent-of-go/utils/files"
 	"strconv"
-	//"github.com/ecampostrini/advent-of-go/utils/files"
 )
 
 type BinTree struct {
@@ -74,7 +74,7 @@ func getFirstRightLeaf(node *BinTree) *BinTree {
 }
 
 func explode(node *BinTree, depth int) bool {
-	if depth == 4 && node.Left != nil && node.Right != nil {
+	if depth == 4 && (node.Left != nil || node.Right != nil) {
 		//fmt.Printf("Reached explosion depth: %v\n", node)
 		//fmt.Printf("Exploding: %v, %v\n", node.Left, node.Right)
 
@@ -111,7 +111,10 @@ func explode(node *BinTree, depth int) bool {
 			firstLeftLeaf.Val += node.Left.Val
 		}
 
-		*node = BinTree{0, nil, nil, node.Parent}
+		//*node = BinTree{0, nil, nil, node.Parent}
+		node.Left = nil
+		node.Right = nil
+		node.Val = 0
 		return true
 	}
 
@@ -129,15 +132,19 @@ func split(node *BinTree) bool {
 	if node == nil {
 		return false
 	}
-
 	if node.Val >= 10 {
 		half := node.Val / 2
-		a := &BinTree{half, nil, nil, node}
-		b := &BinTree{half + node.Val%2, nil, nil, node}
-		*node = BinTree{0, a, b, node.Parent}
+		a := &BinTree{half, nil, nil, nil}
+		b := &BinTree{half + node.Val%2, nil, nil, nil}
+		c := &BinTree{0, a, b, node.Parent}
+		a.Parent, b.Parent = c, c
+		if node.Parent.Left == node {
+			node.Parent.Left = c
+		} else {
+			node.Parent.Right = c
+		}
 		return true
 	}
-
 	var hadSplit bool
 	hadSplit = split(node.Left)
 	if !hadSplit {
@@ -146,69 +153,45 @@ func split(node *BinTree) bool {
 	return hadSplit
 }
 
-func inOrder(n *BinTree) {
-	if n == nil {
-		return
+func reduce(node *BinTree) {
+	hadReduction := true
+	for hadReduction {
+		hadExplosion := false
+		for explode(node, 0) {
+			hadExplosion = true
+		}
+		hadSplit := split(node)
+		hadReduction = hadExplosion || hadSplit
 	}
-
-	inOrder(n.Left)
-	fmt.Printf("(%p) %v\n", n, *n)
-	inOrder(n.Right)
 }
 
-func printAndExplode(in string) {
-	n := parseNumber(in)
-	//fmt.Println(in)
-	//inOrder(n)
-	fmt.Printf("\n---\n")
-	printBinTree(n)
-	explode(n, 0)
-	fmt.Printf("\n")
-	printBinTree(n)
-	explode(n, 0)
-	fmt.Printf("\n")
-	printBinTree(n)
-	explode(n, 0)
-	fmt.Printf("\n")
-	printBinTree(n)
+func getMagnitude(node *BinTree) int {
+	if node == nil {
+		return 0
+	}
+	if node.Left == nil && node.Right == nil {
+		return node.Val
+	}
+	return 3*getMagnitude(node.Left) + 2*getMagnitude(node.Right)
 }
 
 func main() {
-	//_, file := files.ReadFile("./input.txt")
-	//defer file.Close()
+	scanner, file := files.ReadFile("./input.txt")
+	defer file.Close()
 
-	var testInput = []string{
-		"[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]",
-		"[[[[[9,8],1],2],3],4]",
-		"[7,[6,[5,[4,[3,2]]]]]",
-		"[[[[4,3],[1,7]],[4,[9,2]]],[[6,[1,7]],[[8,0],3]]]",
-		"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]",
+	scanner.Scan()
+	result := parseNumber(scanner.Text())
+	for scanner.Scan() {
+		newNumber := parseNumber(scanner.Text())
+		newPair := &BinTree{0, result, newNumber, nil}
+		result.Parent, newNumber.Parent = newPair, newPair
+		result = newPair
+		reduce(result)
 	}
+	// for debugging
+	//printBinTree(result)
+	//fmt.Printf("\n")
 
-	for _, in := range testInput {
-		n := parseNumber(in)
-		hadReduction := true
-		fmt.Printf("\n---\n")
-
-		for hadReduction {
-			fmt.Printf("\n")
-			printBinTree(n)
-
-			hadExplosion := false
-			for explode(n, 0) {
-				hadExplosion = true
-				fmt.Printf("\n")
-				//printBinTree(n)
-			}
-
-			hadSplit := false
-			for split(n) {
-				hadSplit = true
-				fmt.Printf("\n")
-				//printBinTree(n)
-			}
-
-			hadReduction = hadExplosion || hadSplit
-		}
-	}
+	// part 1
+	fmt.Println(getMagnitude(result))
 }
