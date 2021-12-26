@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ecampostrini/advent-of-go/utils/files"
+	"math"
 	"strconv"
 )
 
@@ -75,25 +76,17 @@ func getFirstRightLeaf(node *BinTree) *BinTree {
 
 func explode(node *BinTree, depth int) bool {
 	if depth == 4 && (node.Left != nil || node.Right != nil) {
-		//fmt.Printf("Reached explosion depth: %v\n", node)
-		//fmt.Printf("Exploding: %v, %v\n", node.Left, node.Right)
-
 		curr := node.Parent
 		prev := node
 		for curr != nil && (curr.Right == nil || curr.Right == prev) {
-			//fmt.Printf("current %v\n", curr)
 			prev = curr
 			curr = curr.Parent
 		}
-		//fmt.Printf("current %v\n", curr)
 		if curr != nil {
 			curr = curr.Right
 		}
 		if firstRightLeaf := getFirstLeftLeaf(curr); firstRightLeaf != nil {
-			//fmt.Printf("firstRightLeaf: %v\n", firstRightLeaf)
-			//fmt.Printf("node.Right: %v\n", node.Right)
 			firstRightLeaf.Val += node.Right.Val
-			//fmt.Printf("firstRightLeafval: %v\n", firstRightLeaf.Val)
 		}
 
 		curr = node.Parent
@@ -106,12 +99,8 @@ func explode(node *BinTree, depth int) bool {
 			curr = curr.Left
 		}
 		if firstLeftLeaf := getFirstRightLeaf(curr); firstLeftLeaf != nil {
-			//fmt.Printf("firstLeftLeaf: %v\n", firstLeftLeaf)
-			//fmt.Printf("node.Left: %v\n", node.Left)
 			firstLeftLeaf.Val += node.Left.Val
 		}
-
-		//*node = BinTree{0, nil, nil, node.Parent}
 		node.Left = nil
 		node.Right = nil
 		node.Val = 0
@@ -179,10 +168,14 @@ func main() {
 	scanner, file := files.ReadFile("./input.txt")
 	defer file.Close()
 
-	scanner.Scan()
-	result := parseNumber(scanner.Text())
+	var snailfishNumbers []string
 	for scanner.Scan() {
-		newNumber := parseNumber(scanner.Text())
+		snailfishNumbers = append(snailfishNumbers, scanner.Text())
+	}
+
+	result := parseNumber(snailfishNumbers[0])
+	for i := 1; i < len(snailfishNumbers); i++ {
+		newNumber := parseNumber(snailfishNumbers[i])
 		newPair := &BinTree{0, result, newNumber, nil}
 		result.Parent, newNumber.Parent = newPair, newPair
 		result = newPair
@@ -194,4 +187,28 @@ func main() {
 
 	// part 1
 	fmt.Println(getMagnitude(result))
+
+	// part 2
+	var largestMagnitude = math.MinInt
+	for i := 0; i < len(snailfishNumbers)-1; i++ {
+		var root *BinTree
+		for j := i; j < len(snailfishNumbers); j++ {
+			n1, n2 := parseNumber(snailfishNumbers[i]), parseNumber(snailfishNumbers[j])
+			root = &BinTree{0, n1, n2, nil}
+			n1.Parent, n2.Parent = root, root
+			reduce(root)
+			if magnitude := getMagnitude(root); magnitude > largestMagnitude {
+				largestMagnitude = magnitude
+			}
+
+			n1, n2 = parseNumber(snailfishNumbers[i]), parseNumber(snailfishNumbers[j])
+			root = &BinTree{0, n2, n1, nil}
+			n1.Parent, n2.Parent = root, root
+			reduce(root)
+			if magnitude := getMagnitude(root); magnitude > largestMagnitude {
+				largestMagnitude = magnitude
+			}
+		}
+	}
+	fmt.Println(largestMagnitude)
 }
