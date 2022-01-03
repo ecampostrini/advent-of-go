@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+func PrintStringSlice(in []string) {
+	for _, line := range in {
+		fmt.Printf("%s\n", line)
+	}
+}
+
 func PrintGridString(grid [][]string) {
 	for _, row := range grid {
 		for _, c := range row {
