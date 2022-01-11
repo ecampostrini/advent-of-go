@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/ecampostrini/advent-of-go/utils/files"
-	"github.com/ecampostrini/advent-of-go/utils/slices"
 	"github.com/ecampostrini/advent-of-go/utils/types"
 )
 
@@ -54,10 +53,8 @@ func getPixelSurroundings(x, y int, image []string, darkVoid bool) string {
 			} else {
 				ret = ret + "#"
 			}
-			//fmt.Printf("(%d, %d): %s\n", ix, iy, ".")
 		} else {
 			ret = ret + string(image[iy][ix])
-			//fmt.Printf("(%d, %d): %s\n", ix, iy, string(image[iy][ix]))
 		}
 	}
 	return ret
@@ -67,7 +64,7 @@ func enhaceImage(image []string, algorithm string, iterationNum int) []string {
 	var ret []string = make([]string, len(image)+2)
 	for y := -1; y < len(image)+1; y++ {
 		for x := -1; x < len(image[0])+1; x++ {
-			var darkVoid bool
+      darkVoid := true
 			if iterationNum == 0 {
 				darkVoid = true
 			} else if iterationNum%2 == 1 && algorithm[0] == '#' {
@@ -100,15 +97,20 @@ func main() {
 
 	scanner.Scan()
 	algorithm := scanner.Text()
-	fmt.Printf("Algorithm: %d\n", len(algorithm))
 	// consume empty space
 	scanner.Scan()
 	inputImage := readImage(scanner)
+
 	var outputImage []string = inputImage
-	for i := 0; i < 2; i++ {
+  var part1, part2 int
+	for i := 0; i < 50; i++ {
 		outputImage = enhaceImage(outputImage, algorithm, i)
-		fmt.Printf("---\n")
-		slices.PrintStringSlice(outputImage)
-		fmt.Printf("\nPixels lit: %d\n", countPixels(outputImage, '#'))
+    if i == 1 {
+      part1 = countPixels(outputImage, '#')
+    } else if i == 49 {
+      part2 = countPixels(outputImage, '#')
+    }
 	}
+  fmt.Println(part1)
+  fmt.Println(part2)
 }
