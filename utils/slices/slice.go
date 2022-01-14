@@ -13,6 +13,12 @@ func PrintStringSlice(in []string) {
 	}
 }
 
+func PrintIntSlice(in []int) {
+	for _, line := range in {
+		fmt.Printf("%d\n", line)
+	}
+}
+
 func PrintGridString(grid [][]string) {
 	for _, row := range grid {
 		for _, c := range row {
